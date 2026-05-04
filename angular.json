@@ -30,12 +30,7 @@
                 "glob": "**/*",
                 "input": "src/assets"
               },
-              "src/favicon.ico",
-              {
-                "glob": "_redirects",
-                "input": "src",
-                "output": "/"
-              }
+              "src/favicon.ico"
             ],
             "styles": [
               "src/styles.scss"

@@ -12,7 +12,22 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    loadComponent: () => import('./pages/admin/admin.component').then((m) => m.AdminComponent)
+    loadComponent: () => import('./pages/admin/shell/admin-shell.component').then((m) => m.AdminShellComponent),
+    children: [
+      {
+        path: '',
+        redirectTo: 'foglalasok',
+        pathMatch: 'full'
+      },
+      {
+        path: 'foglalasok',
+        loadComponent: () => import('./pages/admin/bookings/admin-bookings.component').then((m) => m.AdminBookingsComponent)
+      },
+      {
+        path: 'arak',
+        loadComponent: () => import('./pages/admin/prices/admin-prices.component').then((m) => m.AdminPricesComponent)
+      }
+    ]
   },
   {
     path: '**',

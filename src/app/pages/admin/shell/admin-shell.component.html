@@ -1,0 +1,50 @@
+<header class="site-header">
+  <div class="container header-content">
+    <a class="brand" routerLink="/">
+      <span class="brand-icon">●</span>
+      <span>{{ companyName }}</span>
+    </a>
+
+    <nav class="nav" aria-label="Admin navigáció">
+      <a routerLink="/">Főoldal</a>
+      <a routerLink="/foglalas">Foglalás</a>
+      <a routerLink="/admin/foglalasok" routerLinkActive="active" *ngIf="adminAllowed">Admin foglalások</a>
+      <a routerLink="/admin/arak" routerLinkActive="active" *ngIf="adminAllowed">Admin árlista</a>
+    </nav>
+
+    <button class="logout-button" type="button" *ngIf="loggedIn" (click)="signOut()">Kilépés</button>
+  </div>
+</header>
+
+<main class="admin-page">
+  <section class="container">
+    <div class="admin-title">
+      <p class="eyebrow">Admin</p>
+      <h1>Admin felület</h1>
+      <p>Foglalások külön naptár/lista nézetben, árlista külön szerkesztő oldalon.</p>
+    </div>
+
+    <div class="info-box" *ngIf="loading">Betöltés...</div>
+    <div class="error-box" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <form class="login-card" #loginForm="ngForm" (ngSubmit)="signIn()" *ngIf="!loading && !adminAllowed">
+      <h2>Admin belépés</h2>
+      <label>
+        E-mail
+        <input type="email" name="email" [(ngModel)]="login.email" required placeholder="admin@pelda.hu">
+      </label>
+      <label>
+        Jelszó
+        <input type="password" name="password" [(ngModel)]="login.password" required placeholder="••••••••">
+      </label>
+      <button class="btn primary full" type="submit" [disabled]="loginForm.invalid || loading">Belépés</button>
+    </form>
+
+    <div class="admin-tabs" *ngIf="adminAllowed">
+      <a routerLink="/admin/foglalasok" routerLinkActive="active">Foglalások</a>
+      <a routerLink="/admin/arak" routerLinkActive="active">Árlista</a>
+    </div>
+
+    <router-outlet *ngIf="adminAllowed"></router-outlet>
+  </section>
+</main>

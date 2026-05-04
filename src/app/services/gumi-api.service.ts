@@ -71,6 +71,30 @@ export class GumiApiService {
     return (data ?? []) as Booking[];
   }
 
+  async getBookingsBetween(startDate: string, endDate: string): Promise<Booking[]> {
+    const { data, error } = await this.supabase
+      .from('bookings')
+      .select('*, service_prices(name)')
+      .gte('requested_date', startDate)
+      .lte('requested_date', endDate)
+      .order('requested_date', { ascending: true })
+      .order('requested_time', { ascending: true });
+
+    if (error) throw error;
+    return (data ?? []) as Booking[];
+  }
+
+  async getLatestBookings(limit = 20): Promise<Booking[]> {
+    const { data, error } = await this.supabase
+      .from('bookings')
+      .select('*, service_prices(name)')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return (data ?? []) as Booking[];
+  }
+
   async updateBookingStatus(id: string, status: BookingStatus): Promise<void> {
     const { error } = await this.supabase
       .from('bookings')

@@ -1,0 +1,110 @@
+<div class="message info-box" *ngIf="loading">Árlista betöltése...</div>
+<div class="message error-box" *ngIf="errorMessage">{{ errorMessage }}</div>
+<div class="message success-box" *ngIf="successMessage">{{ successMessage }}</div>
+
+<section class="panel prices-panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Árlista kezelése</h2>
+      <p>Itt frissíthetők a weboldalon megjelenő szolgáltatások, árak és időtartamok.</p>
+    </div>
+    <button class="small-button" type="button" (click)="refresh()" [disabled]="loading || saving">Frissítés</button>
+  </div>
+
+  <div class="price-editor" *ngFor="let price of prices">
+    <div class="editor-title">
+      <div>
+        <h3>{{ price.name || 'Névtelen árlista elem' }}</h3>
+        <p>{{ formatPrice(price) }}</p>
+      </div>
+      <span class="visibility" [class.inactive]="!price.is_active">{{ price.is_active ? 'Aktív' : 'Inaktív' }}</span>
+    </div>
+
+    <label>
+      Név
+      <input name="name-{{ price.id }}" [(ngModel)]="price.name">
+    </label>
+
+    <label>
+      Leírás
+      <textarea name="description-{{ price.id }}" [(ngModel)]="price.description" rows="2"></textarea>
+    </label>
+
+    <div class="form-row four-columns">
+      <label>
+        Ár
+        <input type="number" name="amount-{{ price.id }}" [(ngModel)]="price.price_amount">
+      </label>
+      <label>
+        Utótag
+        <input name="suffix-{{ price.id }}" [(ngModel)]="price.price_suffix">
+      </label>
+      <label>
+        Időtartam / perc
+        <input type="number" name="duration-{{ price.id }}" [(ngModel)]="price.duration_minutes">
+      </label>
+      <label>
+        Sorrend
+        <input type="number" name="order-{{ price.id }}" [(ngModel)]="price.display_order">
+      </label>
+    </div>
+
+    <div class="form-row checkbox-row">
+      <label class="checkbox-label">
+        <input type="checkbox" name="highlighted-{{ price.id }}" [(ngModel)]="price.is_highlighted">
+        Kiemelt
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" name="active-{{ price.id }}" [(ngModel)]="price.is_active">
+        Aktív
+      </label>
+      <span class="price-preview">Előnézet: {{ formatPrice(price) }}</span>
+    </div>
+
+    <button class="small-button primary-small" type="button" (click)="savePrice(price)" [disabled]="saving">
+      Mentés
+    </button>
+  </div>
+
+  <form class="new-price" #newPriceForm="ngForm" (ngSubmit)="createPrice()">
+    <h3>Új árlista elem</h3>
+    <label>
+      Név
+      <input name="newName" [(ngModel)]="newPrice.name" required>
+    </label>
+    <label>
+      Leírás
+      <textarea name="newDescription" [(ngModel)]="newPrice.description" rows="2"></textarea>
+    </label>
+    <div class="form-row four-columns">
+      <label>
+        Ár
+        <input type="number" name="newAmount" [(ngModel)]="newPrice.price_amount" required>
+      </label>
+      <label>
+        Utótag
+        <input name="newSuffix" [(ngModel)]="newPrice.price_suffix" required>
+      </label>
+      <label>
+        Időtartam / perc
+        <input type="number" name="newDuration" [(ngModel)]="newPrice.duration_minutes" required>
+      </label>
+      <label>
+        Sorrend
+        <input type="number" name="newOrder" [(ngModel)]="newPrice.display_order" required>
+      </label>
+    </div>
+    <div class="form-row checkbox-row">
+      <label class="checkbox-label">
+        <input type="checkbox" name="newHighlighted" [(ngModel)]="newPrice.is_highlighted">
+        Kiemelt
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" name="newActive" [(ngModel)]="newPrice.is_active">
+        Aktív
+      </label>
+      <span class="price-preview">Előnézet: {{ formatPrice(newPrice) }}</span>
+    </div>
+    <button class="btn primary full" type="submit" [disabled]="newPriceForm.invalid || saving">Új elem létrehozása</button>
+  </form>
+</section>

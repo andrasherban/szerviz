@@ -1,0 +1,91 @@
+<div class="message info-box" *ngIf="loading">Foglalások betöltése...</div>
+<div class="message error-box" *ngIf="errorMessage">{{ errorMessage }}</div>
+<div class="message success-box" *ngIf="successMessage">{{ successMessage }}</div>
+
+<section class="panel calendar-panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Foglalások naptárban</h2>
+      <p>Sárga: még nincs jóváhagyva. Zöld: visszaigazolt vagy elvégezve.</p>
+    </div>
+
+    <div class="calendar-actions">
+      <button type="button" class="small-button" (click)="previousMonth()" [disabled]="loading || saving">Előző</button>
+      <button type="button" class="small-button" (click)="goToToday()" [disabled]="loading || saving">Ma</button>
+      <button type="button" class="small-button" (click)="nextMonth()" [disabled]="loading || saving">Következő</button>
+      <button type="button" class="small-button primary-small" (click)="refresh()" [disabled]="loading || saving">Frissítés</button>
+    </div>
+  </div>
+
+  <div class="month-title">{{ monthLabel }}</div>
+
+  <div class="calendar-legend">
+    <span><i class="dot pending"></i> Jóváhagyásra vár</span>
+    <span><i class="dot ok"></i> OK / visszaigazolt</span>
+    <span><i class="dot cancelled"></i> Lemondva</span>
+  </div>
+
+  <div class="calendar-grid week-header" aria-hidden="true">
+    <div *ngFor="let day of weekDays">{{ day }}</div>
+  </div>
+
+  <div class="calendar-grid calendar-days">
+    <article class="calendar-day" *ngFor="let day of calendarDays" [class.muted]="!day.isCurrentMonth" [class.today]="day.isToday">
+      <div class="day-number">{{ day.dayNumber }}</div>
+
+      <div class="day-bookings" *ngIf="day.bookings.length > 0">
+        <button
+          class="calendar-booking"
+          type="button"
+          *ngFor="let booking of day.bookings"
+          [ngClass]="getCalendarBookingClass(booking)"
+          [title]="booking.customer_name + ' - ' + (booking.service_prices?.name || '')">
+          <strong>{{ formatTime(booking.requested_time) }}</strong>
+          <span>{{ booking.customer_name }}</span>
+        </button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="panel latest-panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Legfrissebb foglalások</h2>
+      <p>A legutóbb beküldött foglalások vannak legfelül.</p>
+    </div>
+  </div>
+
+  <div class="booking-list" *ngIf="latestBookings.length > 0; else noBookings">
+    <article class="booking-card" *ngFor="let booking of latestBookings" [ngClass]="booking.status">
+      <div class="booking-main">
+        <div>
+          <span class="date">{{ formatDateTime(booking) }}</span>
+          <h3>{{ booking.customer_name }}</h3>
+          <p>{{ booking.service_prices?.name || 'Nincs szolgáltatás megadva' }}</p>
+        </div>
+        <span class="status" [ngClass]="booking.status">{{ getStatusLabel(booking.status) }}</span>
+      </div>
+
+      <div class="booking-meta">
+        <span>Telefon: <a [href]="'tel:' + booking.phone">{{ booking.phone }}</a></span>
+        <span *ngIf="booking.email">E-mail: <a [href]="'mailto:' + booking.email">{{ booking.email }}</a></span>
+        <span *ngIf="booking.vehicle_type">Autó: {{ booking.vehicle_type }}</span>
+        <span *ngIf="booking.license_plate">Rendszám: {{ booking.license_plate }}</span>
+        <span>Beküldve: {{ booking.created_at | date:'yyyy.MM.dd. HH:mm' }}</span>
+      </div>
+
+      <p class="note" *ngIf="booking.note">{{ booking.note }}</p>
+
+      <div class="status-actions">
+        <button type="button" *ngFor="let status of statuses" (click)="updateBookingStatus(booking, status)" [disabled]="saving || booking.status === status">
+          {{ getStatusLabel(status) }}
+        </button>
+      </div>
+    </article>
+  </div>
+
+  <ng-template #noBookings>
+    <div class="empty-box">Még nincs foglalás.</div>
+  </ng-template>
+</section>
