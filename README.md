@@ -83,3 +83,45 @@ A projekt Row Level Security policy-kat használ:
 ## Ha 401/403 vagy permission hiba jön
 
 Supabase Dashboardban ellenőrizd, hogy a Data API alatt a `public` schema és a szükséges táblák / functionök elérhetőek-e. A `schema.sql` tartalmazza a szükséges GRANT és RLS beállításokat, de a projekt beállításaitól függően ezt a dashboardon is engedélyezni kellhet.
+
+## Cloudflare Pages + Supabase összekötés
+
+A projektben a production build a `tools/generate-env.mjs` scriptet futtatja, ami a Cloudflare Pages environment variable értékekből legenerálja a `src/environments/environment.prod.ts` fájlt.
+
+Cloudflare Pages-ben állítsd be:
+
+- `SUPABASE_URL` = a Supabase Project URL, pl. `https://abcxyz.supabase.co`
+- `SUPABASE_ANON_KEY` = Supabase anon/public/publishable key
+
+Cloudflare Pages build beállítás:
+
+```txt
+Framework preset: Angular
+Build command: npm run build
+Build output directory: dist/gumi-szerviz-angular/browser
+Node.js version: 20 vagy újabb
+```
+
+Ha a Cloudflare build output nálad csak `dist/gumi-szerviz-angular`, akkor azt használd. Angular 18-nál általában a `browser` almappa a jó.
+
+Lokális gyors build, environment injektálás nélkül:
+
+```bash
+npm run build:local
+```
+
+Lokális production build környezeti változókkal:
+
+```bash
+SUPABASE_URL="https://abcxyz.supabase.co" SUPABASE_ANON_KEY="..." npm run build
+```
+
+Windows PowerShellben:
+
+```powershell
+$env:SUPABASE_URL="https://abcxyz.supabase.co"
+$env:SUPABASE_ANON_KEY="..."
+npm run build
+```
+
+Fontos: service_role/secret key-t soha ne tegyél Angular frontendbe. Ide csak anon/public/publishable kulcs kell, RLS policy-k mellett.

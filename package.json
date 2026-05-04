@@ -4,8 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development"
+    "build": "npm run generate-env && ng build --output-path dist/cloudflare",
+    "watch": "ng build --watch --configuration development",
+    "generate-env": "node tools/generate-env.mjs",
+    "build:local": "ng build",
+    "build:cloudflare": "npm run generate-env && ng build --output-path dist/cloudflare"
   },
   "private": true,
   "dependencies": {
