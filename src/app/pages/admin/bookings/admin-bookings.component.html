@@ -39,7 +39,8 @@
           type="button"
           *ngFor="let booking of day.bookings"
           [ngClass]="getCalendarBookingClass(booking)"
-          [title]="booking.customer_name + ' - ' + (booking.service_prices?.name || '')">
+          [title]="booking.customer_name + ' - ' + (booking.service_prices?.name || '')"
+          (click)="openBooking(booking)">
           <strong>{{ formatTime(booking.requested_time) }}</strong>
           <span>{{ booking.customer_name }}</span>
         </button>
@@ -49,22 +50,41 @@
 </section>
 
 <section class="panel latest-panel">
-  <div class="panel-heading">
+  <div class="panel-heading list-heading">
     <div>
-      <h2>Legfrissebb foglalások</h2>
-      <p>A legutóbb beküldött foglalások vannak legfelül.</p>
+      <h2>{{ latestListTitle }}</h2>
+      <p>{{ latestListDescription }}</p>
+    </div>
+
+    <div class="plate-search">
+      <label for="licensePlateSearch">Keresés rendszám alapján</label>
+      <div class="plate-search-row">
+        <input
+          id="licensePlateSearch"
+          type="search"
+          name="licensePlateSearch"
+          [(ngModel)]="licensePlateSearch"
+          (ngModelChange)="onLicensePlateSearchChange()"
+          placeholder="pl. ABC-123">
+        <button type="button" class="small-button" *ngIf="hasLicensePlateSearch" (click)="clearLicensePlateSearch()">Törlés</button>
+      </div>
+      <small *ngIf="searching">Keresés...</small>
     </div>
   </div>
 
-  <div class="booking-list" *ngIf="latestBookings.length > 0; else noBookings">
-    <article class="booking-card" *ngFor="let booking of latestBookings" [ngClass]="booking.status">
+  <div class="booking-list" *ngIf="displayedLatestBookings.length > 0; else noBookings">
+    <article class="booking-card" *ngFor="let booking of displayedLatestBookings" [ngClass]="booking.status">
       <div class="booking-main">
         <div>
           <span class="date">{{ formatDateTime(booking) }}</span>
           <h3>{{ booking.customer_name }}</h3>
           <p>{{ booking.service_prices?.name || 'Nincs szolgáltatás megadva' }}</p>
         </div>
-        <span class="status" [ngClass]="booking.status">{{ getStatusLabel(booking.status) }}</span>
+
+        <div class="booking-card-actions">
+          <span class="status" [ngClass]="booking.status">{{ getStatusLabel(booking.status) }}</span>
+          <button type="button" class="open-button" (click)="openBooking(booking)">Megnyitás</button>
+        </div>
       </div>
 
       <div class="booking-meta">
@@ -86,6 +106,59 @@
   </div>
 
   <ng-template #noBookings>
-    <div class="empty-box">Még nincs foglalás.</div>
+    <div class="empty-box">{{ emptyListMessage }}</div>
   </ng-template>
 </section>
+
+<div class="modal-backdrop" *ngIf="selectedBooking as booking" (click)="closeBookingModal()">
+  <section class="booking-modal" role="dialog" aria-modal="true" aria-labelledby="bookingModalTitle" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-close" aria-label="Bezárás" (click)="closeBookingModal()">×</button>
+
+    <div class="modal-header">
+      <span class="date">{{ formatDateTime(booking) }}</span>
+      <h2 id="bookingModalTitle">{{ booking.customer_name }}</h2>
+      <span class="status" [ngClass]="booking.status">{{ getStatusLabel(booking.status) }}</span>
+    </div>
+
+    <div class="modal-grid">
+      <div>
+        <strong>Szolgáltatás</strong>
+        <span>{{ booking.service_prices?.name || 'Nincs szolgáltatás megadva' }}</span>
+      </div>
+      <div>
+        <strong>Telefon</strong>
+        <span><a [href]="'tel:' + booking.phone">{{ booking.phone }}</a></span>
+      </div>
+      <div *ngIf="booking.email">
+        <strong>E-mail</strong>
+        <span><a [href]="'mailto:' + booking.email">{{ booking.email }}</a></span>
+      </div>
+      <div *ngIf="booking.vehicle_type">
+        <strong>Autó típusa</strong>
+        <span>{{ booking.vehicle_type }}</span>
+      </div>
+      <div *ngIf="booking.license_plate">
+        <strong>Rendszám</strong>
+        <span>{{ booking.license_plate }}</span>
+      </div>
+      <div>
+        <strong>Beküldve</strong>
+        <span>{{ booking.created_at | date:'yyyy.MM.dd. HH:mm' }}</span>
+      </div>
+    </div>
+
+    <div class="modal-note" *ngIf="booking.note">
+      <strong>Megjegyzés</strong>
+      <p>{{ booking.note }}</p>
+    </div>
+
+    <div class="modal-status-actions">
+      <span>Státusz módosítása:</span>
+      <div class="status-actions">
+        <button type="button" *ngFor="let status of statuses" (click)="updateBookingStatus(booking, status)" [disabled]="saving || booking.status === status">
+          {{ getStatusLabel(status) }}
+        </button>
+      </div>
+    </div>
+  </section>
+</div>

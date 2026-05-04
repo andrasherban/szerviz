@@ -1,39 +1,47 @@
-# Cloudflare Pages deploy javítás
+# Cloudflare deploy
 
-Ez a projekt Angular 18-as statikus SPA-ként deployolható Cloudflare Pagesre.
-Ne Workers/Angular auto-config deployként futtasd, mert az Angular 19+ verziót várhat.
+A projekt Angular 19-es, Supabase kliensoldali integrációval.
 
-## Cloudflare Pages beállítás
+## Worker + static assets beállítás
 
-Workers & Pages → Pages → Import existing Git repository
+A projekt gyökerében lévő `wrangler.jsonc` explicit megadja a statikus build mappát és az SPA fallbacket:
 
-Javasolt beállítások:
+```json
+{
+  "name": "szerviz",
+  "assets": {
+    "directory": "./dist/gumi-szerviz-angular/browser",
+    "not_found_handling": "single-page-application"
+  }
+}
+```
+
+Ez váltja ki a régi `_redirects` megoldást, ezért `_redirects` fájl nem kell.
+
+## Build beállítás
 
 ```txt
-Framework preset: None / No preset
 Build command: npm run build
-Build output directory: dist/cloudflare/browser
+Deploy command: npx wrangler deploy
 Node.js version: 20 vagy 22
+```
+
+A build ezt hozza létre:
+
+```txt
+dist/gumi-szerviz-angular/browser
 ```
 
 ## Environment variables
 
-Settings → Environment variables alatt add meg Production és Preview környezetre is:
+Build változóként add meg:
 
 ```txt
 SUPABASE_URL=https://SAJAT_PROJECT_ID.supabase.co
 SUPABASE_ANON_KEY=SAJAT_SUPABASE_ANON_VAGY_PUBLISHABLE_KEY
 ```
 
-## Routing
-
-A `src/_redirects` fájl bekerült, és az Angular build kimásolja a dist gyökerébe:
-
-```txt
-/* /index.html 200
-```
-
-Ez kell ahhoz, hogy a `/foglalas` és `/admin` direkt megnyitva/frissítve se adjon 404-et.
+A `SUPABASE_URL` csak az alap projekt URL legyen, `/rest/v1/` nélkül.
 
 ## Lokális ellenőrzés
 

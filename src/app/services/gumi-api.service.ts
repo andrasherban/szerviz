@@ -95,6 +95,24 @@ export class GumiApiService {
     return (data ?? []) as Booking[];
   }
 
+
+
+  async searchBookingsByLicensePlate(query: string, limit = 50): Promise<Booking[]> {
+    const trimmed = query.trim();
+    if (!trimmed) return [];
+
+    const { data, error } = await this.supabase
+      .from('bookings')
+      .select('*, service_prices(name)')
+      .ilike('license_plate', `%${trimmed}%`)
+      .order('requested_date', { ascending: false })
+      .order('requested_time', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return (data ?? []) as Booking[];
+  }
+
   async updateBookingStatus(id: string, status: BookingStatus): Promise<void> {
     const { error } = await this.supabase
       .from('bookings')

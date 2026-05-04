@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Booking, BookingStatus } from '../../../models/booking.model';
 import { GumiApiService } from '../../../services/gumi-api.service';
 
@@ -15,25 +16,30 @@ interface CalendarDay {
 @Component({
   selector: 'app-admin-bookings',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-bookings.component.html',
   styleUrl: './admin-bookings.component.scss'
 })
 export class AdminBookingsComponent implements OnInit {
   private readonly api = inject(GumiApiService);
+  private licensePlateSearchTimeout?: ReturnType<typeof setTimeout>;
 
   readonly statuses: BookingStatus[] = ['pending', 'confirmed', 'completed', 'cancelled'];
   readonly weekDays = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
 
   loading = true;
   saving = false;
+  searching = false;
   errorMessage = '';
   successMessage = '';
 
   currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   monthBookings: Booking[] = [];
   latestBookings: Booking[] = [];
+  licensePlateSearchResults: Booking[] = [];
+  licensePlateSearch = '';
   calendarDays: CalendarDay[] = [];
+  selectedBooking: Booking | null = null;
 
   async ngOnInit(): Promise<void> {
     await this.refresh();
@@ -56,6 +62,10 @@ export class AdminBookingsComponent implements OnInit {
       this.monthBookings = monthBookings;
       this.latestBookings = latestBookings;
       this.buildCalendar();
+
+      if (this.hasLicensePlateSearch) {
+        await this.searchByLicensePlate();
+      }
     } catch (error) {
       this.errorMessage = this.getErrorMessage(error);
     } finally {
@@ -79,6 +89,54 @@ export class AdminBookingsComponent implements OnInit {
     await this.refresh();
   }
 
+  openBooking(booking: Booking): void {
+    this.selectedBooking = booking;
+  }
+
+  closeBookingModal(): void {
+    this.selectedBooking = null;
+  }
+
+  onLicensePlateSearchChange(): void {
+    if (this.licensePlateSearchTimeout) {
+      clearTimeout(this.licensePlateSearchTimeout);
+    }
+
+    this.licensePlateSearchTimeout = setTimeout(() => {
+      void this.searchByLicensePlate();
+    }, 250);
+  }
+
+  async searchByLicensePlate(): Promise<void> {
+    this.errorMessage = '';
+
+    if (!this.hasLicensePlateSearch) {
+      this.licensePlateSearchResults = [];
+      this.searching = false;
+      return;
+    }
+
+    this.searching = true;
+
+    try {
+      this.licensePlateSearchResults = await this.api.searchBookingsByLicensePlate(this.licensePlateSearch, 50);
+    } catch (error) {
+      this.errorMessage = this.getErrorMessage(error);
+    } finally {
+      this.searching = false;
+    }
+  }
+
+  clearLicensePlateSearch(): void {
+    this.licensePlateSearch = '';
+    this.licensePlateSearchResults = [];
+    this.searching = false;
+
+    if (this.licensePlateSearchTimeout) {
+      clearTimeout(this.licensePlateSearchTimeout);
+    }
+  }
+
   async updateBookingStatus(booking: Booking, status: BookingStatus): Promise<void> {
     this.saving = true;
     this.errorMessage = '';
@@ -87,6 +145,11 @@ export class AdminBookingsComponent implements OnInit {
     try {
       await this.api.updateBookingStatus(booking.id, status);
       booking.status = status;
+
+      if (this.selectedBooking?.id === booking.id) {
+        this.selectedBooking = { ...this.selectedBooking, status };
+      }
+
       this.successMessage = 'Foglalás státusza frissítve.';
       await this.refresh();
     } catch (error) {
@@ -98,6 +161,30 @@ export class AdminBookingsComponent implements OnInit {
 
   get monthLabel(): string {
     return new Intl.DateTimeFormat('hu-HU', { year: 'numeric', month: 'long' }).format(this.currentMonth);
+  }
+
+  get displayedLatestBookings(): Booking[] {
+    return this.hasLicensePlateSearch ? this.licensePlateSearchResults : this.latestBookings;
+  }
+
+  get hasLicensePlateSearch(): boolean {
+    return this.licensePlateSearch.trim().length > 0;
+  }
+
+  get latestListTitle(): string {
+    return this.hasLicensePlateSearch ? 'Rendszám keresési találatok' : 'Legfrissebb foglalások';
+  }
+
+  get latestListDescription(): string {
+    return this.hasLicensePlateSearch
+      ? 'A rendszám alapján talált foglalások vannak legfelül.'
+      : 'A legutóbb beküldött foglalások vannak legfelül.';
+  }
+
+  get emptyListMessage(): string {
+    return this.hasLicensePlateSearch
+      ? 'Nincs találat erre a rendszámra.'
+      : 'Még nincs foglalás.';
   }
 
   getStatusLabel(status: BookingStatus): string {
