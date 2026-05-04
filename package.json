@@ -4,11 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm run generate-env && ng build --output-path dist/cloudflare",
+    "build": "npm run generate-env && ng build --output-path dist/gumi-szerviz-angular",
     "watch": "ng build --watch --configuration development",
     "generate-env": "node tools/generate-env.mjs",
     "build:local": "ng build",
-    "build:cloudflare": "npm run generate-env && ng build --output-path dist/cloudflare"
+    "build:cloudflare": "npm run generate-env && ng build --output-path dist/gumi-szerviz-angular"
   },
   "private": true,
   "dependencies": {
@@ -20,10 +20,10 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@supabase/supabase-js": "^2.0.0",
     "rxjs": "~7.8.1",
     "tslib": "^2.6.2",
-    "zone.js": "~0.15.0",
-    "@supabase/supabase-js": "^2.0.0"
+    "zone.js": "~0.15.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.0",
