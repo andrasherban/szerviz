@@ -1,0 +1,139 @@
+<header class="site-header">
+  <div class="container header-content">
+    <a class="brand" routerLink="/" aria-label="Főoldal">
+      <span class="brand-icon">●</span>
+      <span>{{ companyName }}</span>
+    </a>
+
+    <nav class="nav" aria-label="Fő navigáció">
+      <a href="#arak">Árak</a>
+      <a href="#kapcsolat">Kapcsolat</a>
+      <a routerLink="/foglalas">Foglalás</a>
+      <a routerLink="/admin">Admin</a>
+    </nav>
+
+    <a class="phone-link" [href]="'tel:' + phoneNumber">{{ phoneNumber }}</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Gyors gumiszerviz időpontfoglalással</p>
+        <h1>Gumicsere, centrírozás és defektjavítás kényelmesen, várakozás nélkül.</h1>
+        <p class="hero-text">
+          Foglalj időpontot online, nézd meg az aktuális árakat, vagy hívj minket közvetlenül.
+          Szezonális kerékcsere és teljes gumiszerviz személyautókhoz.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn primary" routerLink="/foglalas">Időpontot foglalok</a>
+          <a class="btn secondary" href="#arak">Árlista</a>
+        </div>
+
+        <div class="hero-badges" aria-label="Szolgáltatás előnyei">
+          <span>✓ Szabad időpontok online</span>
+          <span>✓ Admin felületen kezelhető foglalások</span>
+          <span>✓ Supabase árlista</span>
+        </div>
+      </div>
+
+      <aside class="hero-card" aria-label="Aktuális információk">
+        <div class="status-pill">Ma nyitva: 08:00 – 17:00</div>
+        <h2>Szezonális gumicsere</h2>
+        <p>Hozott kerékszettel akár 30–45 perc alatt.</p>
+        <div class="quick-info">
+          <div *ngIf="prices[0] as firstPrice">
+            <strong>{{ formatPrice(firstPrice) }}</strong>
+            <span>{{ firstPrice.name }}</span>
+          </div>
+          <div *ngIf="prices[1] as secondPrice">
+            <strong>{{ formatPrice(secondPrice) }}</strong>
+            <span>{{ secondPrice.name }}</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="arak" class="prices-section">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <h2 class="section-title">Árlista</h2>
+          <p class="section-lead">Tájékoztató árak. A pontos díj függhet a mérettől, felnitől és az autó típusától.</p>
+        </div>
+      </div>
+
+      <div class="warning-box" *ngIf="priceLoadWarning">{{ priceLoadWarning }}</div>
+
+      <div class="price-grid">
+        <article class="price-card" *ngFor="let item of prices" [class.highlighted]="item.is_highlighted">
+          <span class="badge" *ngIf="item.is_highlighted">Legnépszerűbb</span>
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.description }}</p>
+          <strong>{{ formatPrice(item) }}</strong>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="kapcsolat" class="contact-section">
+    <div class="container contact-grid">
+      <div class="contact-card">
+        <h2 class="section-title">Kapcsolat</h2>
+        <p class="section-lead">Kérdés esetén hívj minket, vagy foglalj időpontot az online foglaló oldalon.</p>
+
+        <div class="contact-list">
+          <a [href]="'tel:' + phoneNumber">
+            <span>Telefon</span>
+            <strong>{{ phoneNumber }}</strong>
+          </a>
+          <a [href]="'mailto:' + email">
+            <span>E-mail</span>
+            <strong>{{ email }}</strong>
+          </a>
+          <div>
+            <span>Cím</span>
+            <strong>{{ address }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="hours-card">
+        <h3>Nyitvatartás</h3>
+        <div class="hour-row" *ngFor="let item of openingHours" [class.closed]="item.closed">
+          <span>{{ item.day }}</span>
+          <strong>{{ item.hours }}</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="foglalas" class="booking-section">
+    <div class="container booking-grid">
+      <div>
+        <p class="eyebrow">Időpontfoglalás</p>
+        <h2 class="section-title">A foglalás külön oldalon működik</h2>
+        <p class="section-lead">
+          A foglaló oldalon dátum alapján látszanak a szabad időpontok. A beküldött foglalások Supabase adatbázisba kerülnek,
+          az admin oldalon pedig visszaigazolhatók vagy lemondhatók.
+        </p>
+      </div>
+
+      <div class="booking-form cta-card">
+        <h3>Foglalj online</h3>
+        <p>Válassz szolgáltatást, dátumot és szabad időpontot.</p>
+        <a class="btn primary full" routerLink="/foglalas">Foglaló oldal megnyitása</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-content">
+    <span>© {{ companyName }}</span>
+    <span>Gumiszerviz, kerékcsere, centrírozás</span>
+  </div>
+</footer>

@@ -1,0 +1,263 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  color: #fff;
+  background: rgba(12, 17, 23, 0.94);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.header-content {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand,
+.nav {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  gap: 10px;
+  font-weight: 800;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  color: transparent;
+  background: var(--brand);
+  box-shadow: inset 0 0 0 8px #202938;
+}
+
+.nav {
+  gap: 22px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 700;
+}
+
+.nav a:hover,
+.phone-link:hover {
+  color: var(--brand);
+}
+
+.phone-link {
+  color: #fff;
+  font-weight: 800;
+}
+
+.booking-hero {
+  padding: 76px 0;
+  color: #fff;
+  background:
+    radial-gradient(circle at top left, rgba(243, 195, 22, 0.24), transparent 35%),
+    linear-gradient(135deg, #0c1117 0%, #17202a 60%, #0f172a 100%);
+}
+
+.booking-hero-grid,
+.booking-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.booking-hero h1 {
+  margin: 0;
+  max-width: 780px;
+  font-size: clamp(2.4rem, 5vw, 4.7rem);
+  line-height: 0.97;
+  letter-spacing: -0.07em;
+}
+
+.booking-hero p {
+  max-width: 700px;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.75;
+  font-size: 1.08rem;
+}
+
+.booking-hero aside {
+  display: grid;
+  gap: 8px;
+  padding: 26px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.booking-hero aside strong {
+  color: var(--brand);
+  font-size: 1.2rem;
+}
+
+.booking-content {
+  padding: 64px 0 86px;
+}
+
+.slot-card,
+.booking-form {
+  padding: 28px;
+  border-radius: var(--radius);
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 34px rgba(15, 23, 42, 0.08);
+}
+
+.slot-card h2,
+.booking-form h2 {
+  margin: 0 0 10px;
+  font-size: 1.8rem;
+  letter-spacing: -0.04em;
+}
+
+.slot-card p {
+  margin: 0 0 22px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.booking-form {
+  display: grid;
+  gap: 18px;
+}
+
+.form-row.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  padding: 13px 14px;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--brand-dark);
+  box-shadow: 0 0 0 4px rgba(243, 195, 22, 0.18);
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.slot-button {
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.slot-button:hover,
+.slot-button.selected {
+  border-color: var(--brand-dark);
+  background: var(--brand);
+}
+
+.service-preview,
+.selected-summary,
+.success-box,
+.error-box,
+.info-box,
+.empty-box {
+  padding: 14px 16px;
+  border-radius: 16px;
+  line-height: 1.5;
+}
+
+.service-preview {
+  display: grid;
+  gap: 4px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+}
+
+.service-preview span {
+  color: var(--muted);
+}
+
+.service-preview b {
+  font-size: 1.2rem;
+}
+
+.selected-summary,
+.info-box,
+.empty-box {
+  margin-top: 16px;
+  background: var(--surface-soft);
+}
+
+.success-box {
+  background: #dcfce7;
+  color: #14532d;
+  font-weight: 800;
+}
+
+.error-box {
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 800;
+}
+
+.btn.full {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .booking-hero-grid,
+  .booking-grid,
+  .form-row.two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .header-content {
+    min-height: auto;
+    padding: 16px 0;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 620px) {
+  .slot-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

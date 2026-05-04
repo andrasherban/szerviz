@@ -1,0 +1,136 @@
+<header class="site-header">
+  <div class="container header-content">
+    <a class="brand" routerLink="/">
+      <span class="brand-icon">●</span>
+      <span>{{ companyName }}</span>
+    </a>
+
+    <nav class="nav" aria-label="Fő navigáció">
+      <a routerLink="/">Főoldal</a>
+      <a routerLink="/" fragment="arak">Árak</a>
+      <a routerLink="/" fragment="kapcsolat">Kapcsolat</a>
+      <a routerLink="/admin">Admin</a>
+    </nav>
+
+    <a class="phone-link" [href]="'tel:' + phoneNumber">{{ phoneNumber }}</a>
+  </div>
+</header>
+
+<main>
+  <section class="booking-hero">
+    <div class="container booking-hero-grid">
+      <div>
+        <p class="eyebrow">Online időpontfoglalás</p>
+        <h1>Válassz szabad időpontot, és küldd el a foglalási kérést.</h1>
+        <p>
+          A naptár a már foglalt időpontokat automatikusan kiveszi a listából.
+          A beküldött foglalás először függő státuszba kerül, amit az admin oldalon lehet visszaigazolni.
+        </p>
+      </div>
+      <aside>
+        <strong>Nyitvatartás</strong>
+        <span>H–Cs: 08:00–17:00</span>
+        <span>P: 08:00–16:00</span>
+        <span>Szo: 09:00–13:00</span>
+        <span>V: zárva</span>
+      </aside>
+    </div>
+  </section>
+
+  <section class="booking-content">
+    <div class="container booking-grid">
+      <section class="slot-card">
+        <h2>Szabad időpontok</h2>
+        <p>Először válassz dátumot, majd kattints egy szabad időpontra.</p>
+
+        <label>
+          Dátum
+          <input type="date" name="date" [(ngModel)]="booking.requested_date" [min]="minDate" (change)="loadSlots()">
+        </label>
+
+        <div class="info-box" *ngIf="loadingSlots">Időpontok betöltése...</div>
+        <div class="error-box" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+        <div class="slot-grid" *ngIf="!loadingSlots && availableSlots.length > 0">
+          <button
+            type="button"
+            *ngFor="let slot of availableSlots"
+            class="slot-button"
+            [class.selected]="booking.requested_time === slot"
+            (click)="selectSlot(slot)">
+            {{ slot }}
+          </button>
+        </div>
+
+        <div class="empty-box" *ngIf="!loadingSlots && availableSlots.length === 0 && !errorMessage">
+          Erre a napra nincs elérhető időpont. Próbálj másik dátumot.
+        </div>
+
+        <div class="selected-summary" *ngIf="booking.requested_time">
+          Kiválasztott időpont:
+          <strong>{{ booking.requested_date }} {{ booking.requested_time }}</strong>
+        </div>
+      </section>
+
+      <form class="booking-form" #bookingForm="ngForm" (ngSubmit)="submitBooking()">
+        <h2>Foglalási adatok</h2>
+
+        <div class="success-box" *ngIf="successMessage">{{ successMessage }}</div>
+
+        <label>
+          Szolgáltatás
+          <select name="service" [(ngModel)]="booking.service_price_id" required [disabled]="loadingPrices">
+            <option value="" disabled>Válassz szolgáltatást</option>
+            <option *ngFor="let price of prices" [value]="price.id">
+              {{ price.name }} — {{ formatPrice(price) }}
+            </option>
+          </select>
+        </label>
+
+        <div class="service-preview" *ngIf="getSelectedService() as selectedService">
+          <strong>{{ selectedService.name }}</strong>
+          <span>{{ selectedService.description }}</span>
+          <b>{{ formatPrice(selectedService) }}</b>
+        </div>
+
+        <div class="form-row two-columns">
+          <label>
+            Név
+            <input name="customerName" [(ngModel)]="booking.customer_name" required placeholder="Pl. Kovács Péter">
+          </label>
+
+          <label>
+            Telefon
+            <input name="phone" [(ngModel)]="booking.phone" required placeholder="+36 30 123 4567">
+          </label>
+        </div>
+
+        <div class="form-row two-columns">
+          <label>
+            E-mail
+            <input type="email" name="email" [(ngModel)]="booking.email" placeholder="email@pelda.hu">
+          </label>
+
+          <label>
+            Rendszám
+            <input name="licensePlate" [(ngModel)]="booking.license_plate" placeholder="ABC-123">
+          </label>
+        </div>
+
+        <label>
+          Autó típusa
+          <input name="vehicleType" [(ngModel)]="booking.vehicle_type" placeholder="Pl. Opel Astra, 205/55 R16">
+        </label>
+
+        <label>
+          Megjegyzés
+          <textarea name="note" [(ngModel)]="booking.note" rows="4" placeholder="Pl. 4 db gumi, alufelni, TPMS van"></textarea>
+        </label>
+
+        <button class="btn primary full" type="submit" [disabled]="bookingForm.invalid || !booking.requested_time || sending">
+          {{ sending ? 'Küldés...' : 'Foglalási kérés elküldése' }}
+        </button>
+      </form>
+    </div>
+  </section>
+</main>

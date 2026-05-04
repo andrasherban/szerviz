@@ -1,0 +1,165 @@
+<header class="site-header">
+  <div class="container header-content">
+    <a class="brand" routerLink="/">
+      <span class="brand-icon">●</span>
+      <span>{{ companyName }}</span>
+    </a>
+
+    <nav class="nav" aria-label="Admin navigáció">
+      <a routerLink="/">Főoldal</a>
+      <a routerLink="/foglalas">Foglalás</a>
+    </nav>
+
+    <button class="logout-button" type="button" *ngIf="loggedIn" (click)="signOut()">Kilépés</button>
+  </div>
+</header>
+
+<main class="admin-page">
+  <section class="container">
+    <div class="admin-title">
+      <p class="eyebrow">Admin</p>
+      <h1>Foglalások és árlista kezelése</h1>
+      <p>Az admin oldal Supabase Auth belépést és admin_users jogosultságot használ.</p>
+    </div>
+
+    <div class="info-box" *ngIf="loading">Betöltés...</div>
+    <div class="error-box" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="success-box" *ngIf="successMessage">{{ successMessage }}</div>
+
+    <form class="login-card" #loginForm="ngForm" (ngSubmit)="signIn()" *ngIf="!loading && !adminAllowed">
+      <h2>Admin belépés</h2>
+      <label>
+        E-mail
+        <input type="email" name="email" [(ngModel)]="login.email" required placeholder="admin@pelda.hu">
+      </label>
+      <label>
+        Jelszó
+        <input type="password" name="password" [(ngModel)]="login.password" required placeholder="••••••••">
+      </label>
+      <button class="btn primary full" type="submit" [disabled]="loginForm.invalid || loading">Belépés</button>
+    </form>
+
+    <div class="admin-grid" *ngIf="adminAllowed">
+      <section class="panel bookings-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Foglalások</h2>
+            <p>Függő foglalások visszaigazolása, teljesítése vagy lemondása.</p>
+          </div>
+          <button class="small-button" type="button" (click)="refreshAdminData()" [disabled]="saving">Frissítés</button>
+        </div>
+
+        <div class="booking-list" *ngIf="bookings.length > 0; else noBookings">
+          <article class="booking-card" *ngFor="let booking of bookings" [class.pending]="booking.status === 'pending'">
+            <div class="booking-main">
+              <div>
+                <span class="date">{{ booking.requested_date }} · {{ booking.requested_time.slice(0, 5) }}</span>
+                <h3>{{ booking.customer_name }}</h3>
+                <p>{{ booking.service_prices?.name || 'Nincs szolgáltatás megadva' }}</p>
+              </div>
+              <span class="status" [ngClass]="booking.status">{{ getStatusLabel(booking.status) }}</span>
+            </div>
+
+            <div class="booking-meta">
+              <span>Telefon: <a [href]="'tel:' + booking.phone">{{ booking.phone }}</a></span>
+              <span *ngIf="booking.email">E-mail: <a [href]="'mailto:' + booking.email">{{ booking.email }}</a></span>
+              <span *ngIf="booking.vehicle_type">Autó: {{ booking.vehicle_type }}</span>
+              <span *ngIf="booking.license_plate">Rendszám: {{ booking.license_plate }}</span>
+            </div>
+
+            <p class="note" *ngIf="booking.note">{{ booking.note }}</p>
+
+            <div class="status-actions">
+              <button type="button" *ngFor="let status of statuses" (click)="updateBookingStatus(booking, status)" [disabled]="saving || booking.status === status">
+                {{ getStatusLabel(status) }}
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <ng-template #noBookings>
+          <div class="empty-box">Még nincs foglalás.</div>
+        </ng-template>
+      </section>
+
+      <section class="panel prices-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Árlista</h2>
+            <p>Itt frissíthetők a weboldalon megjelenő szolgáltatások és árak.</p>
+          </div>
+        </div>
+
+        <div class="price-editor" *ngFor="let price of prices">
+          <label>
+            Név
+            <input name="name-{{ price.id }}" [(ngModel)]="price.name">
+          </label>
+
+          <label>
+            Leírás
+            <textarea name="description-{{ price.id }}" [(ngModel)]="price.description" rows="2"></textarea>
+          </label>
+
+          <div class="form-row three-columns">
+            <label>
+              Ár
+              <input type="number" name="amount-{{ price.id }}" [(ngModel)]="price.price_amount">
+            </label>
+            <label>
+              Utótag
+              <input name="suffix-{{ price.id }}" [(ngModel)]="price.price_suffix">
+            </label>
+            <label>
+              Sorrend
+              <input type="number" name="order-{{ price.id }}" [(ngModel)]="price.display_order">
+            </label>
+          </div>
+
+          <div class="form-row checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" name="highlighted-{{ price.id }}" [(ngModel)]="price.is_highlighted">
+              Kiemelt
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="active-{{ price.id }}" [(ngModel)]="price.is_active">
+              Aktív
+            </label>
+            <span class="price-preview">{{ formatPrice(price) }}</span>
+          </div>
+
+          <button class="small-button primary-small" type="button" (click)="savePrice(price)" [disabled]="saving">
+            Mentés
+          </button>
+        </div>
+
+        <form class="new-price" #newPriceForm="ngForm" (ngSubmit)="createPrice()">
+          <h3>Új árlista elem</h3>
+          <label>
+            Név
+            <input name="newName" [(ngModel)]="newPrice.name" required>
+          </label>
+          <label>
+            Leírás
+            <textarea name="newDescription" [(ngModel)]="newPrice.description" rows="2"></textarea>
+          </label>
+          <div class="form-row three-columns">
+            <label>
+              Ár
+              <input type="number" name="newAmount" [(ngModel)]="newPrice.price_amount" required>
+            </label>
+            <label>
+              Utótag
+              <input name="newSuffix" [(ngModel)]="newPrice.price_suffix" required>
+            </label>
+            <label>
+              Sorrend
+              <input type="number" name="newOrder" [(ngModel)]="newPrice.display_order" required>
+            </label>
+          </div>
+          <button class="btn primary full" type="submit" [disabled]="newPriceForm.invalid || saving">Új elem létrehozása</button>
+        </form>
+      </section>
+    </div>
+  </section>
+</main>
